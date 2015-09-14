@@ -31,7 +31,6 @@ func commandManager(writes <-chan string) {
 			case "Close":
 				go closeProgramm()
 			case "help":
-
 			default:
 				fmt.Println("Unknown command: ", command)
 			}
