@@ -30,6 +30,8 @@ func commandManager(writes <-chan string) {
 			switch strings.TrimSuffix(command, "\r\n") {
 			case "Close":
 				go closeProgramm()
+			case "help":
+
 			default:
 				fmt.Println("Unknown command: ", command)
 			}
@@ -43,6 +45,7 @@ func closeProgramm() {
 	fmt.Println("Programm Closed")
 	os.Exit(0)
 }
+
 func main() {
 
 	writes := make(chan string)
