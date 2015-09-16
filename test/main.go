@@ -34,34 +34,42 @@ func commandManager(writes <-chan string) {
 	for {
 		select {
 		case command := <-writes:
-			if commandsList[strings.TrimSuffix(command, "\r\n")] != nil {
-				go commandsList[strings.TrimSuffix(command, "\r\n")]()
+			commandName, commandArgs := splitCommand(command)
+
+			if commandsList[commandName] != nil { //have artefacts here: null string, command without args
+				go commandsList[commandName](commandArgs...)
 			} else {
 				fmt.Println("Unknown command: ", command)
 			}
 		}
-
 	}
 
 }
 
-//=============================================================================
-type ProcFunc func()
-
-func SayHello() {
-	fmt.Printf("Hello!\n")
+func splitCommand(commandString string) (string, []string) {
+	splitRes := strings.Split(strings.TrimSuffix(commandString, "\r\n"), " ")
+	return splitRes[0], splitRes[1:]
 }
 
-func closeProgramm() {
+//=============================================================================
+type ProcFunc func(args ...string)
+
+func SayHello(names ...string) {
+	for _, name := range names {
+		fmt.Println("Hello, ", name)
+	}
+
+}
+
+func closeProgramm(args ...string) {
 	fmt.Println("Programm Closed")
 	os.Exit(0)
 }
 
-func readDataFrom() { //address string) {
+func readDataFrom(address ...string) {
 	//TODO: check address
 
-	address := "tmp.txt"
-	f, err := os.Open(address)
+	f, err := os.Open(address[0])
 	check(err)
 	defer f.Close()
 	buf := bytes.NewBuffer(nil)
