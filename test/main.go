@@ -1,6 +1,7 @@
 package main
 
 import (
+	"./progectsEditor"
 	"bufio"
 	"bytes"
 	"fmt"
@@ -52,21 +53,22 @@ func splitCommand(commandString string) (string, []string) {
 }
 
 //=============================================================================
-type ProcFunc func(args ...string)
+type ProcFunc func(args ...string) bool
 
-func SayHello(names ...string) {
+func SayHello(names ...string) bool {
 	for _, name := range names {
 		fmt.Println("Hello, ", name)
 	}
-
+	return true
 }
 
-func closeProgramm(args ...string) {
+func closeProgramm(args ...string) bool {
 	fmt.Println("Programm Closed")
 	os.Exit(0)
+	return true
 }
 
-func readDataFrom(address ...string) {
+func readDataFrom(address ...string) bool {
 	//TODO: check address
 
 	f, err := os.Open(address[0])
@@ -75,12 +77,14 @@ func readDataFrom(address ...string) {
 	buf := bytes.NewBuffer(nil)
 	io.Copy(buf, f)
 	fmt.Print(buf)
+	return true
 }
 
 var commandsList = map[string]ProcFunc{
-	"Hello": SayHello,
-	"Close": closeProgramm,
-	"Read":  readDataFrom,
+	"Hello":     SayHello,
+	"Close":     closeProgramm,
+	"Read":      readDataFrom,
+	"OpenTrunc": progectsEditor.OpenTrunc,
 }
 
 //=============================================================================
