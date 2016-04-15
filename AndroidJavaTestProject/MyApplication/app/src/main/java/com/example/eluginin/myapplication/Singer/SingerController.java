@@ -1,4 +1,4 @@
-package com.example.eluginin.myapplication;
+package com.example.eluginin.myapplication.Singer;
 
 /**
  * Created by eluginin on 07.04.16.

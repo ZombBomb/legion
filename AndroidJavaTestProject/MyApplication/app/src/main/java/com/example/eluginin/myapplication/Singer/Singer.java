@@ -1,4 +1,4 @@
-package com.example.eluginin.myapplication;
+package com.example.eluginin.myapplication.Singer;
 
 /**
  * Created by eluginin on 07.04.16.
@@ -22,4 +22,5 @@ public class Singer {
     public void setName(String name) {
         this.name = name;
     }
+
 }

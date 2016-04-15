@@ -5,9 +5,26 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
+import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.os.AsyncTask;
+import android.support.v7.app.ActionBarActivity;
+import android.os.Bundle;
+import android.util.Log;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -15,38 +32,102 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        new ParseTask().execute();
+        initData();
+    }
 
-       FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+    private class ParseTask extends AsyncTask<Void, Void, String> {
+
+        HttpURLConnection urlConnection = null;
+        BufferedReader reader = null;
+        String resultJson = "";
+
+        @Override
+        protected String doInBackground(Void... params) {
+            // получаем данные с внешнего ресурса
+            try {
+                URL url = new URL("http://androiddocs.ru/api/friends.json");
+
+                urlConnection = (HttpURLConnection) url.openConnection();
+                urlConnection.setRequestMethod("GET");
+                urlConnection.connect();
+
+                InputStream inputStream = urlConnection.getInputStream();
+                StringBuffer buffer = new StringBuffer();
+
+                reader = new BufferedReader(new InputStreamReader(inputStream));
+
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    buffer.append(line);
+                }
+
+                resultJson = buffer.toString();
+
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        });
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+            return resultJson;
         }
 
-        return super.onOptionsItemSelected(item);
+        @Override
+        protected void onPostExecute(String strJson) {
+            super.onPostExecute(strJson);
+
+            JSONObject dataJsonObj = null;
+            String secondName = "";
+
+            try {
+                dataJsonObj = new JSONObject(strJson);
+                JSONArray friends = dataJsonObj.getJSONArray("friends");
+
+                // 1. достаем инфо о втором друге - индекс 1
+                JSONObject secondFriend = friends.getJSONObject(1);
+                secondName = secondFriend.getString("name");
+
+                // 2. перебираем и выводим контакты каждого друга
+                for (int i = 0; i < friends.length(); i++) {
+                    JSONObject friend = friends.getJSONObject(i);
+
+                    JSONObject contacts = friend.getJSONObject("contacts");
+
+                    String phone = contacts.getString("mobile");
+                    String email = contacts.getString("email");
+                    String skype = contacts.getString("skype");
+
+                }
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
     }
+
+
+
+
+
+
+
+
+
+    private void initData()
+    {
+
+        // получаем экземпляр элемента ListView
+        ListView listView = (ListView)findViewById(R.id.lvMain);
+
+        // определяем массив типа String
+        final String[] catnames = new String[] {
+                "Рыжик", "Барсик", "Мурзик", "Мурка", "Васька",
+                "Томасина", "Кристина", "Пушок", "Дымка", "Кузя",
+                "Китти", "Масяня", "Симба"
+        };
+
+        // используем адаптер данных
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,	android.R.layout.simple_list_item_1, catnames);
+
+        listView.setAdapter(adapter);
+    }
+
 }
